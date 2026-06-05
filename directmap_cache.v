@@ -5,9 +5,11 @@
 // I mean Architecture model when went in ASIC flow how much accurately it is done. just for cross reference only.
 // Before Going to PD Stage we know the Performance Model Accuracy to RTL/DV team (Even 70% to 90% met is also fine).
 // Credits : Copilot + My thinking 
-// Author  : Shreyas S Bagi + Copilot AI 
+// Author  : Shreyas S Bagi + Copilot
 //============================================================
 */
+
+/*
 module dcache #(
   parameter LINE_BITS  = 128,
   parameter NUM_LINES  = 64,
@@ -127,3 +129,188 @@ module dcache #(
   end
 
 endmodule
+*/
+
+
+//============================================================
+// Simple Direct-Mapped Data Cache (Prototype RTL)
+//============================================================
+module dcache #(
+  parameter ADDR_W    = 32,
+  parameter LINE_BITS = 128,
+  parameter NUM_LINES = 64,
+  parameter INDEX_W   = 6,   // log2(NUM_LINES)
+  parameter OFFSET_W  = 4,   // 16B line
+  parameter TAG_W     = ADDR_W - INDEX_W - OFFSET_W
+)(
+  input  logic                  clk,
+  input  logic                  rst,
+
+  // CPU side
+  input  logic                  req_valid,
+  input  logic [ADDR_W-1:0]     req_addr,
+  input  logic [LINE_BITS-1:0]  req_wdata,
+  input  logic                  req_we,
+  output logic                  req_ready,
+
+  output logic                  resp_valid,
+  output logic [LINE_BITS-1:0]  resp_rdata,
+  output logic                  resp_hit,
+
+  // Memory side
+  output logic                  mem_req_valid,
+  output logic [ADDR_W-1:0]     mem_req_addr,
+  output logic                  mem_req_we,
+  output logic [LINE_BITS-1:0]  mem_req_wdata,
+  input  logic                  mem_resp_valid,
+  input  logic [LINE_BITS-1:0]  mem_resp_rdata
+);
+
+  // ----------------------------------------------------------
+  // Address breakdown
+  // ----------------------------------------------------------
+  wire [TAG_W-1:0]   addr_tag   = req_addr[ADDR_W-1           -: TAG_W];
+  wire [INDEX_W-1:0] addr_index = req_addr[OFFSET_W+INDEX_W-1 -: INDEX_W];
+
+  // Latched request (single outstanding)
+  logic [ADDR_W-1:0]     req_addr_q;
+  logic [LINE_BITS-1:0]  req_wdata_q;
+  logic                  req_we_q;
+  logic [TAG_W-1:0]      tag_q;
+  logic [INDEX_W-1:0]    index_q;
+
+  // ----------------------------------------------------------
+  // Cache arrays
+  // ----------------------------------------------------------
+  logic [TAG_W-1:0]      tag_array   [NUM_LINES];
+  logic                  valid_array [NUM_LINES];
+  logic                  dirty_array [NUM_LINES];
+  logic [LINE_BITS-1:0]  data_array  [NUM_LINES];
+
+  // Hit detection (combinational on current index_q/tag_q)
+  wire hit = valid_array[index_q] && (tag_array[index_q] == tag_q);
+
+  // ----------------------------------------------------------
+  // FSM
+  // ----------------------------------------------------------
+  typedef enum logic [1:0] {S_IDLE, S_MISS, S_REFILL} state_t;
+  state_t state, next;
+
+  // ----------------------------------------------------------
+  // Sequential
+  // ----------------------------------------------------------
+  integer i;
+  always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+      state <= S_IDLE;
+      req_addr_q  <= '0;
+      req_wdata_q <= '0;
+      req_we_q    <= 1'b0;
+      tag_q       <= '0;
+      index_q     <= '0;
+      for (i = 0; i < NUM_LINES; i++) begin
+        valid_array[i] <= 1'b0;
+        dirty_array[i] <= 1'b0;
+        tag_array[i]   <= '0;
+        data_array[i]  <= '0;
+      end
+    end
+    else begin
+      state <= next;
+
+      // Latch request when accepted
+      if (state == S_IDLE && req_valid && req_ready) begin
+        req_addr_q  <= req_addr;
+        req_wdata_q <= req_wdata;
+        req_we_q    <= req_we;
+        tag_q       <= addr_tag;
+        index_q     <= addr_index;
+      end
+
+      // Store hit: update data + dirty
+      if (state == S_IDLE && req_valid && req_ready && hit && req_we) begin
+        data_array[index_q]  <= req_wdata;
+        dirty_array[index_q] <= 1'b1;
+      end
+
+      // Refill completion: install new line
+      if (state == S_REFILL && mem_resp_valid) begin
+        data_array[index_q]  <= mem_resp_rdata;
+        tag_array[index_q]   <= tag_q;
+        valid_array[index_q] <= 1'b1;
+        dirty_array[index_q] <= 1'b0;
+      end
+    end
+  end
+
+  // ----------------------------------------------------------
+  // Combinational
+  // ----------------------------------------------------------
+  always_comb begin
+    // Defaults
+    req_ready     = 1'b0;
+    resp_valid    = 1'b0;
+    resp_rdata    = '0;
+    resp_hit      = 1'b0;
+
+    mem_req_valid = 1'b0;
+    mem_req_addr  = '0;
+    mem_req_we    = 1'b0;
+    mem_req_wdata = '0;
+
+    next = state;
+
+    case (state)
+      S_IDLE: begin
+        req_ready = 1'b1;
+
+        if (req_valid) begin
+          // Use current addr_tag/addr_index for hit decision
+          if (valid_array[addr_index] &&
+              (tag_array[addr_index] == addr_tag)) begin
+            // HIT
+            resp_valid = 1'b1;
+            resp_hit   = 1'b1;
+            resp_rdata = data_array[addr_index];
+            // store hit handled in seq block
+          end
+          else begin
+            // MISS: request line from memory
+            mem_req_valid = 1'b1;
+            mem_req_we    = 1'b0;
+            mem_req_addr  = {addr_tag, addr_index, {OFFSET_W{1'b0}}};
+            next          = S_MISS;
+          end
+        end
+      end
+
+      S_MISS: begin
+        // If line is dirty, write it back first
+        if (valid_array[index_q] && dirty_array[index_q]) begin
+          mem_req_valid = 1'b1;
+          mem_req_we    = 1'b1;
+          mem_req_addr  = {tag_array[index_q], index_q, {OFFSET_W{1'b0}}};
+          mem_req_wdata = data_array[index_q];
+          // After write-back, go to refill
+          next = S_REFILL;
+        end
+        else begin
+          // No write-back needed, directly wait for refill
+          next = S_REFILL;
+        end
+      end
+
+      S_REFILL: begin
+        // Memory model drives mem_resp_valid + mem_resp_rdata
+        if (mem_resp_valid) begin
+          // After refill, respond to CPU on next IDLE cycle
+          next = S_IDLE;
+        end
+      end
+
+      default: next = S_IDLE;
+    endcase
+  end
+
+endmodule
+

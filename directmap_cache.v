@@ -1,0 +1,122 @@
+//============================================================
+// Simple Direct-Mapped Data Cache (Prototype)
+//============================================================
+module dcache #(
+  parameter LINE_BITS  = 128,
+  parameter NUM_LINES  = 64,
+  parameter INDEX_W    = 6,
+  parameter TAG_W      = 22,
+  parameter ADDR_W     = 32
+)(
+  input  logic                  clk,
+  input  logic                  rst,
+
+  // CPU side
+  input  logic                  req_valid,
+  input  logic [ADDR_W-1:0]     req_addr,
+  input  logic [LINE_BITS-1:0]  req_wdata,
+  input  logic                  req_we,
+  output logic                  req_ready,
+
+  output logic                  resp_valid,
+  output logic [LINE_BITS-1:0]  resp_rdata,
+  output logic                  resp_hit,
+
+  // Memory side
+  output logic                  mem_req_valid,
+  output logic [ADDR_W-1:0]     mem_req_addr,
+  output logic                  mem_req_we,
+  output logic [LINE_BITS-1:0]  mem_req_wdata,
+  input  logic                  mem_resp_valid,
+  input  logic [LINE_BITS-1:0]  mem_resp_rdata
+);
+
+  // Address breakdown
+  logic [TAG_W-1:0]   tag   = req_addr[ADDR_W-1 -: TAG_W];
+  logic [INDEX_W-1:0] index = req_addr[INDEX_W+3 -: INDEX_W];
+
+  // Cache arrays
+  logic [TAG_W-1:0]   tag_array   [NUM_LINES];
+  logic               valid_array [NUM_LINES];
+  logic               dirty_array [NUM_LINES];
+  logic [LINE_BITS-1:0] data_array[NUM_LINES];
+
+  // Simple FSM
+  typedef enum logic [1:0] {IDLE, MISS, REFILL} state_t;
+  state_t state, next;
+
+  // Hit logic
+  logic hit = valid_array[index] && (tag_array[index] == tag);
+
+  // Sequential
+  always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+      state <= IDLE;
+      for (int i = 0; i < NUM_LINES; i++) begin
+        valid_array[i] <= 0;
+        dirty_array[i] <= 0;
+      end
+    end else begin
+      state <= next;
+
+      if (state == REFILL && mem_resp_valid) begin
+        data_array[index]  <= mem_resp_rdata;
+        tag_array[index]   <= tag;
+        valid_array[index] <= 1;
+        dirty_array[index] <= 0;
+      end
+
+      if (state == IDLE && req_valid && hit && req_we) begin
+        data_array[index]  <= req_wdata;
+        dirty_array[index] <= 1;
+      end
+    end
+  end
+
+  // Combinational
+  always_comb begin
+    req_ready     = (state == IDLE);
+    resp_valid    = 0;
+    resp_rdata    = 0;
+    resp_hit      = 0;
+
+    mem_req_valid = 0;
+    mem_req_we    = 0;
+    mem_req_addr  = 0;
+    mem_req_wdata = 0;
+
+    next = state;
+
+    case (state)
+      IDLE: begin
+        if (req_valid) begin
+          if (hit) begin
+            resp_valid = 1;
+            resp_hit   = 1;
+            resp_rdata = data_array[index];
+          end else begin
+            mem_req_valid = 1;
+            mem_req_addr  = {tag, index, 4'b0};
+            next = MISS;
+          end
+        end
+      end
+
+      MISS: begin
+        if (dirty_array[index]) begin
+          mem_req_valid = 1;
+          mem_req_we    = 1;
+          mem_req_addr  = {tag_array[index], index, 4'b0};
+          mem_req_wdata = data_array[index];
+        end
+        next = REFILL;
+      end
+
+      REFILL: begin
+        if (mem_resp_valid)
+          next = IDLE;
+      end
+    endcase
+  end
+
+endmodule

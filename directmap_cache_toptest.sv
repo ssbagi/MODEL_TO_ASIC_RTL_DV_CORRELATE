@@ -1,41 +1,23 @@
-// ============================================================
-// File: directmap_cache_toptest.sv
-// Description: Simple top-level UVM sequence and test for direct-mapped cache functional verification.
-// Author : Shreyas S Bagi + Copilot
-// ============================================================
-class dcache_simple_seq extends uvm_sequence #(dcache_seq_item);
-  `uvm_object_utils(dcache_simple_seq)
+`include "uvm_macros.svh"
+import uvm_pkg::*;
 
-  function new(string name="dcache_simple_seq");
-    super.new(name);
-  endfunction
+// directmap_cache_toptest.sv is now a lightweight compatibility file.
+// Sequence and test class definitions have been moved to separate files:
+//   directmap_cache_base_seq.sv
+//   directmap_cache_wr_rd_seq.sv
+//   directmap_cache_mult_wr_rd_seq.sv
+//   directmap_cache_simple_seq.sv
+//   directmap_cache_read_seq.sv
+//   directmap_cache_write_seq.sv
+//   directmap_cache_write_test.sv
+//   directmap_cache_read_test.sv
+//   directmap_cache_top_seq_test.sv
 
-  task body();
-    dcache_seq_item tr;
-    // Simple pattern: some stores then loads
-    foreach (int i[0:15]) begin
-      tr = dcache_seq_item::type_id::create("tr");
-      tr.we    = 1;
-      tr.addr  = 32'h1000 + i*16;
-      tr.wdata = {$random, $random, $random, $random};
-      start_item(tr);
-      finish_item(tr);
-    end
-
-    foreach (int j[0:15]) begin
-      tr = dcache_seq_item::type_id::create("tr");
-      tr.we    = 0;
-      tr.addr  = 32'h1000 + j*16;
-      tr.wdata = '0;
-      start_item(tr);
-      finish_item(tr);
-    end
-  endtask
-endclass
+// Use the new files directly in your compilation flow.
 
 
-class dcache_test extends uvm_test;
-  `uvm_component_utils(dcache_test)
+class dcache_top_compat_test extends uvm_test;
+  `uvm_component_utils(dcache_top_compat_test)
 
   dcache_env env;
 
@@ -48,12 +30,8 @@ class dcache_test extends uvm_test;
   endfunction
 
   task run_phase(uvm_phase phase);
-    phase.raise_objection(this);
-
-    dcache_simple_seq seq;
-    seq = dcache_simple_seq::type_id::create("seq");
-    seq.start(env.agent.sequencer);
-
-    phase.drop_objection(this);
+    dcache_wr_rd_seq seq;
+    seq = dcache_wr_rd_seq::type_id::create("seq");
+    seq.start(env.magent.sqr);
   endtask
 endclass

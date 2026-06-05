@@ -1,0 +1,33 @@
+%% dcache_block_diagram.mmd
+%% RTL-style block diagram for the direct-mapped cache
+%% ARM-style presentation with clear signal groups and functional blocks
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0b3d91", "secondaryColor": "#f8f9fa", "borderRadius": "6px", "fontFamily": "Arial, sans-serif", "edgeLabelBackground":"#ffffff"}}}%%
+flowchart LR
+  style CPU fill:#ffffff,stroke:#0b3d91,stroke-width:2px
+  style CACHE fill:#e8f0ff,stroke:#0b3d91,stroke-width:2px
+  style MEM fill:#ffffff,stroke:#0b3d91,stroke-width:2px
+
+  CPU[CPU Interface<br/><b>req_valid</b>, req_addr, req_wdata, req_we<br/>resp: req_ready, resp_valid, resp_rdata, resp_hit]
+  subgraph CACHE[Direct-Mapped Cache]
+    direction TB
+    REQ[Request Frontend<br/>Single-outstanding request]
+    TAG[Tag RAM<br/>Index + Tag compare]
+    DATA[Data RAM<br/>Line storage]
+    VDIRTY[Valid / Dirty RAM<br/>Line metadata]
+    CTRL[FSM & Control<br/>S_IDLE / S_MISS / S_REFILL]
+  end
+  MEM[Memory Model / DRAM<br/>mem_req_valid, mem_req_addr, mem_req_we, mem_req_wdata<br/>mem_resp_valid, mem_resp_rdata]
+
+  CPU -->|CPU request / response| REQ
+  REQ --> TAG
+  REQ --> DATA
+  REQ --> VDIRTY
+  TAG -->|hit/miss decision| CTRL
+  VDIRTY --> CTRL
+  DATA --> CTRL
+  CTRL -->|hit: return data| CPU
+  CTRL -->|miss / write-back| MEM
+  MEM -->|memory response| CTRL
+  CTRL --> DATA
+  CTRL --> TAG
+  CTRL --> VDIRTY

@@ -137,8 +137,8 @@ endmodule
 //============================================================
 module dcache #(
   parameter ADDR_W    = 32,
-  parameter LINE_BITS = 128,
-  parameter NUM_LINES = 64,
+  parameter LINE_BITS = 128, // 16B line
+  parameter NUM_LINES = 64,  // Cache size = 64 lines * 16B/line = 1KB
   parameter INDEX_W   = 6,   // log2(NUM_LINES)
   parameter OFFSET_W  = 4,   // 16B line
   parameter TAG_W     = ADDR_W - INDEX_W - OFFSET_W
@@ -196,6 +196,15 @@ module dcache #(
   typedef enum logic [1:0] {S_IDLE, S_MISS, S_REFILL} state_t;
   state_t state, next;
 
+  function string state_name(state_t s);
+    case (s)
+      S_IDLE:   return "S_IDLE";
+      S_MISS:   return "S_MISS";
+      S_REFILL: return "S_REFILL";
+      default:  return "UNKNOWN";
+    endcase
+  endfunction
+
   // ----------------------------------------------------------
   // Sequential
   // ----------------------------------------------------------
@@ -214,6 +223,7 @@ module dcache #(
         tag_array[i]   <= '0;
         data_array[i]  <= '0;
       end
+      $display("%0t: dcache RESET", $time);
     end
     else begin
       state <= next;
@@ -225,12 +235,24 @@ module dcache #(
         req_we_q    <= req_we;
         tag_q       <= addr_tag;
         index_q     <= addr_index;
+        $display("%0t: dcache accepted request we=%0b addr=%h index=%0d tag=%h", $time, req_we, req_addr, addr_index, addr_tag);
       end
 
       // Store hit: update data + dirty
       if (state == S_IDLE && req_valid && req_ready && hit && req_we) begin
         data_array[index_q]  <= req_wdata;
         dirty_array[index_q] <= 1'b1;
+        $display("%0t: dcache WRITE HIT at index=%0d tag=%h data=%h", $time, index_q, tag_q, req_wdata);
+      end
+
+      // State-based informative prints
+      if (state == S_MISS) begin
+        if (valid_array[index_q] && dirty_array[index_q]) begin
+          $display("%0t: dcache MISS with dirty line: writeback index=%0d tag=%h data=%h", $time, index_q, tag_array[index_q], data_array[index_q]);
+        end
+        else begin
+          $display("%0t: dcache MISS no writeback index=%0d", $time, index_q);
+        end
       end
 
       // Refill completion: install new line
@@ -239,6 +261,7 @@ module dcache #(
         tag_array[index_q]   <= tag_q;
         valid_array[index_q] <= 1'b1;
         dirty_array[index_q] <= 1'b0;
+        $display("%0t: dcache REFILL complete index=%0d tag=%h data=%h", $time, index_q, tag_q, mem_resp_rdata);
       end
     end
   end
@@ -260,6 +283,10 @@ module dcache #(
 
     next = state;
 
+    if (next != state) begin
+      $display("%0t: dcache comb eval state=%s next=%s", $time, state_name(state), state_name(next));
+    end
+
     case (state)
       S_IDLE: begin
         req_ready = 1'b1;
@@ -269,12 +296,14 @@ module dcache #(
           if (valid_array[addr_index] &&
               (tag_array[addr_index] == addr_tag)) begin
             // HIT
+            $display("%0t: dcache comb HIT index=%0d tag=%h", $time, addr_index, addr_tag);
             resp_valid = 1'b1;
             resp_hit   = 1'b1;
             resp_rdata = data_array[addr_index];
             // store hit handled in seq block
           end
           else begin
+            $display("%0t: dcache comb MISS index=%0d tag=%h", $time, addr_index, addr_tag);
             // MISS: request line from memory
             mem_req_valid = 1'b1;
             mem_req_we    = 1'b0;
@@ -287,6 +316,7 @@ module dcache #(
       S_MISS: begin
         // If line is dirty, write it back first
         if (valid_array[index_q] && dirty_array[index_q]) begin
+          $display("%0t: dcache comb S_MISS - issuing writeback index=%0d tag=%h addr=%h", $time, index_q, tag_array[index_q], {tag_array[index_q], index_q, {OFFSET_W{1'b0}}});
           mem_req_valid = 1'b1;
           mem_req_we    = 1'b1;
           mem_req_addr  = {tag_array[index_q], index_q, {OFFSET_W{1'b0}}};
@@ -295,6 +325,7 @@ module dcache #(
           next = S_REFILL;
         end
         else begin
+          $display("%0t: dcache comb S_MISS - no writeback needed for index=%0d", $time, index_q);
           // No write-back needed, directly wait for refill
           next = S_REFILL;
         end
@@ -303,6 +334,7 @@ module dcache #(
       S_REFILL: begin
         // Memory model drives mem_resp_valid + mem_resp_rdata
         if (mem_resp_valid) begin
+          $display("%0t: dcache comb S_REFILL - mem_resp_valid, will move to IDLE; index=%0d tag=%h data=%h", $time, index_q, tag_q, mem_resp_rdata);
           // After refill, respond to CPU on next IDLE cycle
           next = S_IDLE;
         end
@@ -313,4 +345,5 @@ module dcache #(
   end
 
 endmodule
+
 

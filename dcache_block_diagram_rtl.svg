@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="760" viewBox="0 0 1200 760" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <style type="text/css"><![CDATA[
+      .title { font: bold 18px Arial, sans-serif; fill: #0b3d91; }
+      .block-title { font: bold 14px Arial, sans-serif; fill: #0b3d91; }
+      .block-text { font: 13px Arial, sans-serif; fill: #202020; }
+      .line { fill: none; stroke: #0b3d91; stroke-width: 2; marker-end: url(#arrow); }
+      .bg { fill: #e8f0ff; stroke: #0b3d91; stroke-width: 2; }
+      .box { fill: #ffffff; stroke: #0b3d91; stroke-width: 2; }
+      .subbox { fill: #f5f8ff; stroke: #0b3d91; stroke-width: 1.4; }
+    ]]></style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0b3d91" />
+    </marker>
+  </defs>
+
+  <text x="40" y="40" class="title">Direct-Mapped Cache RTL Block Diagram</text>
+
+  <rect x="40" y="80" width="280" height="220" class="box" rx="12" ry="12"/>
+  <text x="60" y="110" class="block-title">CPU Interface</text>
+  <text x="60" y="140" class="block-text">req_valid</text>
+  <text x="60" y="160" class="block-text">req_addr</text>
+  <text x="60" y="180" class="block-text">req_wdata</text>
+  <text x="60" y="200" class="block-text">req_we</text>
+  <text x="60" y="230" class="block-text">resp_valid</text>
+  <text x="60" y="250" class="block-text">resp_rdata</text>
+  <text x="60" y="270" class="block-text">resp_hit</text>
+  <text x="60" y="290" class="block-text">req_ready</text>
+
+  <rect x="380" y="70" width="520" height="320" class="bg" rx="14" ry="14"/>
+  <text x="400" y="100" class="block-title">Cache Core</text>
+
+  <rect x="430" y="130" width="220" height="90" class="subbox" rx="10" ry="10"/>
+  <text x="450" y="160" class="block-title">Request Frontend</text>
+  <text x="450" y="185" class="block-text">Single-outstanding request</text>
+
+  <rect x="430" y="250" width="200" height="100" class="subbox" rx="10" ry="10"/>
+  <text x="450" y="280" class="block-title">Tag RAM</text>
+  <text x="450" y="305" class="block-text">Index + Tag compare</text>
+
+  <rect x="680" y="250" width="220" height="100" class="subbox" rx="10" ry="10"/>
+  <text x="700" y="280" class="block-title">Data RAM</text>
+  <text x="700" y="305" class="block-text">Line storage</text>
+
+  <rect x="430" y="380" width="220" height="100" class="subbox" rx="10" ry="10"/>
+  <text x="450" y="410" class="block-title">Valid / Dirty RAM</text>
+  <text x="450" y="435" class="block-text">Line metadata</text>
+
+  <rect x="680" y="380" width="220" height="100" class="subbox" rx="10" ry="10"/>
+  <text x="700" y="410" class="block-title">FSM & Control</text>
+  <text x="700" y="435" class="block-text">S_IDLE / S_MISS / S_REFILL</text>
+
+  <rect x="40" y="430" width="280" height="180" class="box" rx="12" ry="12"/>
+  <text x="60" y="460" class="block-title">Memory Model</text>
+  <text x="60" y="490" class="block-text">mem_req_valid</text>
+  <text x="60" y="515" class="block-text">mem_req_addr</text>
+  <text x="60" y="540" class="block-text">mem_req_we</text>
+  <text x="60" y="565" class="block-text">mem_req_wdata</text>
+  <text x="60" y="600" class="block-text">mem_resp_valid</text>
+  <text x="60" y="625" class="block-text">mem_resp_rdata</text>
+
+  <rect x="380" y="430" width="520" height="180" class="bg" rx="14" ry="14"/>
+  <text x="400" y="460" class="block-title">Top-Level Signals</text>
+  <text x="400" y="490" class="block-text">CPU-side request/response interface</text>
+  <text x="400" y="515" class="block-text">Memory-side request/response interface</text>
+  <text x="400" y="540" class="block-text">DUT connects to dcache_if and UVM environment</text>
+
+  <path class="line" d="M 320 170 C 360 170 380 170 430 175"/>
+  <path class="line" d="M 320 290 C 360 290 380 290 430 295"/>
+  <path class="line" d="M 515 220 L 515 250"/>
+  <path class="line" d="M 515 310 L 515 380"/>
+  <path class="line" d="M 690 300 L 610 320"/>
+  <path class="line" d="M 515 440 L 515 380"/>
+  <path class="line" d="M 900 380 L 930 380"/>
+  <path class="line" d="M 900 430 L 930 430"/>
+  <path class="line" d="M 540 460 L 540 580"/>
+  <path class="line" d="M 850 460 L 900 460"/>
+  <path class="line" d="M 430 510 L 180 510"/>
+  <path class="line" d="M 500 520 L 500 500"/>
+  <path class="line" d="M 500 520 L 500 560"/>
+  <path class="line" d="M 500 520 L 900 520"/>
+  <path class="line" d="M 930 520 L 970 520"/>
+
+  <rect x="40" y="650" width="1120" height="90" fill="#fff8e1" stroke="#d4b106" stroke-width="1.2" rx="6" ry="6"/>
+  <text x="60" y="680" class="block-title">Design Parameters</text>
+  <text x="60" y="705" class="block-text">ADDR_W = 32   LINE_BITS = 128   NUM_LINES = 64</text>
+  <text x="60" y="725" class="block-text">INDEX_W = 6   OFFSET_W = 4   TAG_W = ADDR_W - INDEX_W - OFFSET_W</text>
+</svg>

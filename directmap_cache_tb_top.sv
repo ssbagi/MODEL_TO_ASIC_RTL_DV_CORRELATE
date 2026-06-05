@@ -4,10 +4,12 @@
 // Author : Shreyas S Bagi + Copilot
 // This file instantiates the interface, clock/reset, DUT, and connects the UVM testbench.
 // ============================================================
-module dcache_tb_top;
 
-  import uvm_pkg::*;
-  `include "uvm_macros.svh"
+`include "dcache_pkg.sv"
+`include "uvm_macros.svh"
+import uvm_pkg::*;
+
+module dcache_tb_top;
 
   localparam ADDR_W   = 32;
   localparam LINE_BITS= 128;
@@ -64,11 +66,28 @@ module dcache_tb_top;
     end
   end
 
-  // Hook virtual interfaces
+  // Hook virtual interfaces (wildcarded paths to avoid brittle exact instance naming)
   initial begin
-    uvm_config_db#(virtual dcache_if.drv_mp)::set(null, "uvm_test_top.env.agent.driver", "vif", cache_if);
-    uvm_config_db#(virtual dcache_if.mon_mp)::set(null, "uvm_test_top.env.agent.monitor", "vif", cache_if);
+    uvm_config_db#(virtual dcache_if.drv_mp)::set(null, "uvm_test_top.env.*.drv", "vif", cache_if);
+    uvm_config_db#(virtual dcache_if.mon_mp)::set(null, "uvm_test_top.env.*.mon", "vif", cache_if);
     run_test("dcache_test");
+  end
+
+  // Waveform dump and configurable simulation stop
+  int SIM_TIME = 100000;
+
+  initial begin
+    if ($value$plusargs("SIM_TIME=%d", SIM_TIME)) begin
+      $display("[DCACHE_TB_TOP] SIM_TIME overridden by plusarg: %0d", SIM_TIME);
+    end
+    $dumpfile("wave.vcd");
+    $dumpvars(0, dcache_tb_top);
+  end
+
+  initial begin
+    #SIM_TIME; // Run for a configurable time or until test completion
+    $display("[DCACHE_TB_TOP] SIM_TIME expired after %0d time units", SIM_TIME);
+    $finish;
   end
 
 endmodule

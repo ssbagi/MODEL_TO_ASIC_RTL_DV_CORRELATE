@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_alt_same_addr_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Sequence alternating write and read transactions to one address.
+//              Provides focused coverage on cache line reuse and coherence.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_mult_wr_rd_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Sequence generating random writes followed by matching reads.
+//              Verifies data consistency and read-back behavior after writes.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

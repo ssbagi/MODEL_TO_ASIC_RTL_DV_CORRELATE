@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_top_seq_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Top-level UVM test wrapping the main sequence library.
+//              Provides an entry point for running the cache sequence from the environment.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_one_read_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Sequence that performs one single read from the cache.
+//              Used for simple read path verification and visibility.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_alt_same_addr_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Test for alternating writes and reads to the same address.
+//              Exercises replacement and hit/miss consistency in the cache.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

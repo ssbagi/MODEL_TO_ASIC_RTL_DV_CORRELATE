@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_one_write_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Sequence that performs one single write to the cache.
+//              Useful for simple smoke testing and write path verification.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

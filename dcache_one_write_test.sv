@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_one_write_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Test harness for the single-write standalone sequence.
+//              Runs only one write transaction to exercise the write path.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

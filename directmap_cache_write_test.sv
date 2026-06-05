@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_write_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Dedicated UVM test for the write-only sequence.
+//              Starts the write sequence on the cache environment and checks flow completion.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

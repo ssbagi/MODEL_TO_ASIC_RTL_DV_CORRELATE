@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_read_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Derived sequence producing multiple read transactions.
+//              Exercises the cache read data path and response timing.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_toptest.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Legacy compatibility test file for older top-level simulations.
+//              Preserves backward compatibility while migrating to the new sequence structure.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

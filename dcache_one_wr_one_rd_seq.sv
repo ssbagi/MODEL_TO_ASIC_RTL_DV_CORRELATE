@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_one_wr_one_rd_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Sequence that issues one write then one read to the same address.
+//              Used for quick verification of write and read transaction handling.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

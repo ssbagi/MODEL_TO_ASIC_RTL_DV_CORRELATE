@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_alt_rw_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Sequence alternating writes and reads across different addresses.
+//              Helpful for exercising both write and read paths in one run.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

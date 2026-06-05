@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_pkg.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: UVM package include file that aggregates all cache testbench components.
+//              Controls compile order for interface, transactions, sequences, driver, monitor, agent, env, and tests.
+// ============================================================
 `ifndef DCACHE_PKG_SV
 `define DCACHE_PKG_SV
 

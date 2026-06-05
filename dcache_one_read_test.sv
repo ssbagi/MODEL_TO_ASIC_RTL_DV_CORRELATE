@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_one_read_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Test harness for the single-read standalone sequence.
+//              Runs one read transaction to verify the read response path.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

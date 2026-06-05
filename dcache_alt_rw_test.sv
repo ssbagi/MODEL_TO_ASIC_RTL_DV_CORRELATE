@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_alt_rw_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Test for alternating write/read transactions across addresses.
+//              Exercises cache behavior under mixed traffic patterns.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

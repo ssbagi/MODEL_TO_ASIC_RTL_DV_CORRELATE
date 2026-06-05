@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_simple_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Simple write-then-read sequence over a fixed address range.
+//              Provides a basic cache fill and readback workload for regression tests.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

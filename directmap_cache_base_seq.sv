@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_base_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Base sequence class for cache traffic generation.
+//              Manages UVM objections automatically during sequence execution.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

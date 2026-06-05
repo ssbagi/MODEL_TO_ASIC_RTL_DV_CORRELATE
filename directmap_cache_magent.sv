@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_magent.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Master UVM agent containing driver, sequencer, monitor, and coverage helpers.
+//              Coordinates stimulus generation, response monitoring, and coverage collection.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_read_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Dedicated UVM test that runs the read-only sequence.
+//              Confirms read traffic and response handling from the cache.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

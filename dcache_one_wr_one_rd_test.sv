@@ -1,3 +1,9 @@
+// ============================================================
+// File: dcache_one_wr_one_rd_test.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Dedicated test for a single write followed by a single read.
+//              Validates basic read-after-write cache behavior through a focused scenario.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

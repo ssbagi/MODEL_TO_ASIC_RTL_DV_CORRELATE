@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_wr_rd_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Derived UVM sequence for a write followed by a read.
+//              Used to verify basic write-read cache behavior and response flow.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

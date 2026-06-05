@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_write_seq.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Derived sequence that generates multiple write transactions.
+//              Exercises the cache write path and write transfer behavior.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

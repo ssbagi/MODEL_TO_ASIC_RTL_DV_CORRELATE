@@ -1,3 +1,9 @@
+// ============================================================
+// File: directmap_cache_sagent.sv
+// Author : Shreyas S Bagi + Copilot
+// Description: Slave-only agent containing monitor and scoreboard.
+//              Used when only response observation and scoreboard checking are required.
+// ============================================================
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 

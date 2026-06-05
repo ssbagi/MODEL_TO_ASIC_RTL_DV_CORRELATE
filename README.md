@@ -1,5 +1,12 @@
 # Performance Model to ASIC Co-Relation
 
+## Credits
+
+- Based on standard cache principles and ARM-style presentation.
+- Reference: https://developer.arm.com/documentation/den0042/0100/Caches
+- Author: Shreyas S Bagi
+- Generated and assisted by GitHub Copilot
+
 This repository documents my direct-mapped cache work with proof of concept artifacts so the design, verification, and SystemC modeling are clearly attributed and preserved. The reason people take my work without credit or something so hence if I push in GitHub I have proof of concept and I did the work and stuff. At least people can add source or credit name just like in college projects and acknowledge the author and contributions.
 
 # Direct-Mapped Cache Verification and SystemC Modeling

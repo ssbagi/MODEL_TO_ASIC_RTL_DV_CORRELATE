@@ -1,44 +1,63 @@
-%% dcache_block_diagram.mmd
-%% RTL-style block diagram for the direct-mapped cache
-%% Based on the uploaded images showing cache line structure, address breakdown, and memory interface.
-%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0b3d91", "secondaryColor": "#f8f9fa", "borderRadius": "8px", "fontFamily": "Arial, sans-serif", "edgeLabelBackground":"#ffffff"}}}%%
+%% Direct-Mapped Cache RTL Block Diagram (Corrected)
+%% Clean, ASIC-style, with proper signal flow and hierarchy
+
 flowchart LR
+  %% Styles
   style CPU fill:#ffffff,stroke:#0b3d91,stroke-width:2px
   style CACHE fill:#eef3ff,stroke:#0b3d91,stroke-width:2px
   style MEM fill:#ffffff,stroke:#0b3d91,stroke-width:2px
   style ADDR fill:#f7f9ff,stroke:#0b3d91,stroke-width:1.5px
   style LINE fill:#ffffff,stroke:#0b3d91,stroke-width:1.5px
 
-  CPU[CPU Interface<br/>Inputs: req_valid, req_addr_31_0, req_wdata_127_0, req_we<br/>Outputs: req_ready, resp_valid, resp_rdata_127_0, resp_hit]
+  %% CPU Interface
+  CPU[CPU Interface<br/>Inputs: req_valid, req_addr[31:0], req_wdata[127:0], req_we<br/>Outputs: req_ready, resp_valid, resp_rdata[127:0], resp_hit]
 
+  %% Cache Block
   subgraph CACHE[Direct-Mapped Cache]
     direction TB
-    REQ[Request Frontend<br/>Latches CPU request]
-    TAG[Tag RAM & Compare<br/>Index selects tag, compare -> hit/miss]
-    DATA[Data RAM<br/>128-bit cache line storage]
-    META[Valid / Dirty RAM<br/>Valid and dirty bits per line]
-    CTRL[Cache FSM<br/>IDLE / MISS / REFILL]
+    REQ[Request Frontend<br/>Latch req_valid/addr/we/wdata]
+    TAG[Tag RAM + Comparator<br/>Index → Tag → Compare]
+    DATA[Data RAM<br/>128-bit cache line]
+    META[Valid/Dirty RAM<br/>1-bit valid, 1-bit dirty per line]
+    CTRL[Cache FSM<br/>IDLE / MISS / REFILL / WRITEBACK]
   end
 
-  ADDR[Address Breakdown<br/>Tag / Index / Line Offset]
-  LINE[Cache Line Format<br/>V / Tag / Data / D]
+  %% Address + Line Format (Reference Only)
+  ADDR[Address Breakdown<br/>Tag(22) / Index(6) / Offset(4)]
+  LINE[Cache Line Format<br/>Valid | Tag | 128-bit Data | Dirty]
 
-  MEM[Memory Interface<br/>Outputs: mem_req_valid, mem_req_addr_31_0, mem_req_we, mem_req_wdata_127_0<br/>Inputs: mem_resp_valid, mem_resp_rdata_127_0]
+  %% Memory Interface
+  MEM[Memory Interface<br/>Outputs: mem_req_valid, mem_req_addr[31:0], mem_req_we, mem_req_wdata[127:0]<br/>Inputs: mem_resp_valid, mem_resp_rdata[127:0]]
 
+  %% CPU → Cache
   CPU -->|req_valid / req_addr / req_wdata / req_we| REQ
+
+  %% REQ → internal RAMs
   REQ -->|index| TAG
   REQ -->|index| DATA
   REQ -->|index| META
-  TAG -->|hit/miss| CTRL
-  META -->|valid/dirty| CTRL
-  DATA -->|read data| CTRL
-  CTRL -->|resp_valid / resp_rdata / resp_hit| CPU
-  CTRL -->|mem_req_valid / mem_req_addr / mem_req_we / mem_req_wdata| MEM
-  MEM -->|mem_resp_valid / mem_resp_rdata| CTRL
-  CTRL -->|writeback / refill updates| DATA
-  CTRL -->|tag updates| TAG
-  CTRL -->|metadata updates| META
 
+  %% Internal datapath
+  TAG -->|hit / miss| CTRL
+  META -->|valid / dirty| CTRL
+  DATA -->|read line| CTRL
+
+  %% Cache → CPU
+  CTRL -->|resp_valid / resp_rdata / resp_hit| CPU
+  CTRL -->|req_ready| CPU
+
+  %% Cache → Memory
+  CTRL -->|mem_req_valid / mem_req_addr / mem_req_we / mem_req_wdata| MEM
+
+  %% Memory → Cache
+  MEM -->|mem_resp_valid / mem_resp_rdata| CTRL
+
+  %% Updates on refill / writeback
+  CTRL -->|writeback / refill write| DATA
+  CTRL -->|tag update| TAG
+  CTRL -->|valid/dirty update| META
+
+  %% Reference-only connections
   CPU --- ADDR
   ADDR --- LINE
   LINE --- DATA

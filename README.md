@@ -36,6 +36,8 @@ This repository contains a direct-mapped cache RTL design, UVM-based verificatio
 
 ## Usage
 
+Iteration 1 : Version 1 : Needs still more Validation and addition of the Waveforms and Proof of Concept to tell
+
 ### RTL and Verification
 
 Simulation of the SystemVerilog testbench requires a compatible simulator that supports UVM and SystemVerilog.

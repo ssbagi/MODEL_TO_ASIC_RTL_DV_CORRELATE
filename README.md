@@ -9,6 +9,12 @@
 
 This repository documents my direct-mapped cache work with proof of concept artifacts so the design, verification, and SystemC modeling are clearly attributed and preserved.
 
+# Virtual Prototyping of Hardware Chip
+
+Link : Virtual Prototyping : 
+
+https://youtube.com/playlist?list=PL_JZo16Mzs5VhcqopCA3YRjfZLaGywstl&si=8Ng413xDKaGYaEGw
+
 # Direct-Mapped Cache Verification and SystemC Modeling
 
 This repository contains a direct-mapped cache RTL design, UVM-based verification environment, and a companion SystemC model for architecture-level stress testing.
